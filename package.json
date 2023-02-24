@@ -1,0 +1,33 @@
+{
+  "name": "@mr-huang/node-cli-utils",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "cau": "./bin/index.js"
+  },
+  "files": [
+    "bin",
+    "demo",
+    "libs",
+    "src",
+    "package.json"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cac": "^6.7.14",
+    "simple-git": "^3.16.1"
+  },
+  "devDependencies": {
+    "@types/node": "*",
+    "tsup": "^6.6.3",
+    "typescript": "^4.9.5"
+  }
+}
