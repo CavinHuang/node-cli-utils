@@ -1,5 +1,7 @@
 import path from "path"
 import fs from 'fs'
+import { Logger } from '../../utils/log';
+import { Spinner } from "../../utils";
 
 function parseFormat(format: string) {
   const prefixReg = /\{[prefix|suffix]+:([a-zA-Z\d+_【】]+)+\}/ig
@@ -50,21 +52,41 @@ export const Rename = (dir: string, format: string, filter: string) => {
     throw new Error('文件夹不存在')
   }
 
-  const files = fs.readdirSync(fullPath).map(dirStr => path.join(fullPath, dirStr)).filter((dirStr) => fs.statSync(dirStr).isFile())
+  const files = fs.readdirSync(fullPath).map(dirStr => ({
+    fullpath: path.join(fullPath, dirStr),
+    path: dirStr
+  })).filter((dirStr) => fs.statSync(dirStr.fullpath).isFile())
+
+  Logger.info(`需要修改的文件有${files.length}个`)
 
   for (let i = 0; i < files.length; i++) {
     const file = files[i]
-    const ext = path.extname(file)
-    
+    const ext = path.extname(file.path)
     let fileNewName = formatString
-    if (/{number}/ig.test(formatString)) {
-      fileNewName = fileNewName.replace(/\{number\}/ig, String(i+1))
-    } else {
-      fileNewName += `(${String(i+1)})`
+    let index = createFileName(i)
+    function createName() {
+      if (/{number}/ig.test(formatString)) {
+        fileNewName = formatString.replace(/\{number\}/ig, String(index()))
+      } else {
+        fileNewName += `(${String(i+1)})`
+      }
+
+      if (fileNewName.includes(ext)) return
+      fileNewName += `${ext}`
     }
+    createName()
+    while(fs.existsSync(fileNewName)) {
+      createName()
+    }
+    Spinner.start(`开始重命名${file.path}=>${fileNewName}`)
+    fs.renameSync(file.fullpath, path.join(fullPath, fileNewName))
+    Spinner.success(`${file.path}=>${fileNewName}   操作成功!`);
+    console.log();
+  }
+}
 
-    fileNewName += `${ext}`
-
-    fs.renameSync(file, path.join(fullPath, fileNewName))
+function createFileName(id: number) {
+  return function () {
+    return id++
   }
 }

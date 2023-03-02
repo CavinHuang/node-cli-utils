@@ -1,4 +1,5 @@
 import simpleGit from "simple-git";
+import { Logger } from "../../utils";
 
 const git = simpleGit();
 git.addConfig("proxy", "http://127.0.0.1:4780");
@@ -73,15 +74,19 @@ const doGitAction = async (files: string[]) => {
 };
 
 export const Git = async (count: number = 10) => {
-
+  Logger.info('正在查找文件状态')
   const status = await git.status()
 
   const notAdd = status.not_added
 
+  Logger.info(`获取到${notAdd.length}个未提交的文件`)
+
   const needAdds = sliceArray(notAdd, count)
 
+  Logger.info(`分组成功${needAdds.length}`)
+
   for (let i = 0; i < needAdds.length; i++) {
-    await doGitAction(needAdds[i]);
+    await Logger.startStep(doGitAction(needAdds[i]), `开始第${i}组数据的提交`)
   }
   return false
 };
